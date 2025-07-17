@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>GameDevSM Connect</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+</head>
+<body>
+  <div class="container">
+    <h1>GameDevSM Connect 💬</h1>
+
+    <input type="text" id="username" placeholder="Your username...">
+
+    <div id="chatBox" class="chat-box"></div>
+
+    <div class="input-area">
+      <input type="text" id="msgInput" placeholder="Type your message...">
+      <button id="sendBtn">➤</button>
+    </div>
+  </div>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAAYRSx8u01nap8sbcuILJHqaG_oJ7mhyU",
+      authDomain: "gamedevsm-chat.firebaseapp.com",
+      databaseURL: "https://gamedevsm-chat-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "gamedevsm-chat",
+      storageBucket: "gamedevsm-chat.appspot.com",
+      messagingSenderId: "1031310470966",
+      appId: "1:1031310470966:web:315037842d6c508ebccd97",
+      measurementId: "G-VCTT35GZ1J"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const chatBox = document.getElementById("chatBox");
+    const msgInput = document.getElementById("msgInput");
+    const username = document.getElementById("username");
+
+    document.getElementById("sendBtn").onclick = () => {
+      const name = username.value.trim();
+      const msg = msgInput.value.trim();
+      if (!name || !msg) return alert("Please enter username and message.");
+      const message = { name, text: msg, timestamp: Date.now() };
+      db.ref("messages").push(message);
+      msgInput.value = "";
+    };
+
+    db.ref("messages").limitToLast(50).on("child_added", (snapshot) => {
+      const { name, text } = snapshot.val();
+      const msgElement = document.createElement("div");
+      msgElement.className = "message";
+      msgElement.innerHTML = `<strong>${name}:</strong> ${text}`;
+      chatBox.appendChild(msgElement);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    });
+  </script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-messaging.js"></script>
+<script>
+  const messaging = firebase.messaging();
+
+  // Cere permisiune de notificare
+  messaging.requestPermission()
+    .then(() => messaging.getToken({
+      vapidKey: "BCBlMGvSCzfUbT_zQK8XdXF02bC2zs8GUO9BM46siIHJEQj3_qvsc30pjAgrjz9jNpV5Ri1UE0vmlu5nw1fGDfw"
+    }))
+    .then(token => {
+      console.log("Token:", token);
+      // Poți salva tokenul în baza de date dacă vrei notificări personalizate
+    })
+    .catch(err => {
+      console.error("Permission denied or error:", err);
+    });
+
+  // Primiți notificări când site-ul e deschis
+  messaging.onMessage((payload) => {
+    const { title, body } = payload.notification;
+    alert(`${title}\n${body}`);
+  });
+  // Abonează utilizatorul la topicul global 'chat'
+fetch(`https://iid.googleapis.com/iid/v1/${token}/rel/topics/chat`, {
+  method: 'POST',
+  headers: {
+    'Authorization': 'y4PdiPxTDfCnQAbiyU9sybpLU2qlYVrPqSGipZCv'
+  }
+});
+
+</script>
+
+</body>
+</html>
